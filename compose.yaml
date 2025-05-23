@@ -1,0 +1,9 @@
+services:
+  postgres:
+    image: 'postgres:latest'
+    environment:
+      - 'POSTGRES_DB=pizzashop'
+      - 'POSTGRES_PASSWORD=p!zz4sh0p'
+      - 'POSTGRES_USER=pizza-owner'
+    ports:
+      - '5432'
