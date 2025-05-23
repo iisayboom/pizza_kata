@@ -2,6 +2,18 @@
 
 Welcome to the Pizza Kata!
 
+## 📌 Submission Guidelines
+
+To help us understand your approach and thought process, please follow these guidelines:
+
+* **Fork this repository** (or copy it into your own GitHub/GitLab project).
+* **Commit regularly** with meaningful commit messages. This helps us follow your reasoning during the refactor and feature implementation.
+* We strongly prefer to see your **development history**. A single final commit makes it difficult to assess your approach.
+* You may submit your solution as a link to a **public Git repository**, or as a **ZIP file**.
+* ⚠️ **If there is no Git history**, we cannot properly evaluate your solution.
+
+Good luck and enjoy the kata! 🍀
+
 ## Goal
 
 You are given a working but poorly structured Spring Boot application that handles pizza orders. Your task is to:
