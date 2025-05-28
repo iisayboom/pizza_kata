@@ -1,38 +1,25 @@
 package be.pizza.kata;
 
+import be.pizza.kata.dto.PizzaOrderRequest;
+import be.pizza.kata.dto.PizzaOrderResponse;
+import be.pizza.kata.service.PizzaOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
-
 @RestController
 public class OrderController {
 
-    private final PizzaOrderRepository repository;
+    private final PizzaOrderService service;
 
     @Autowired
-    public OrderController(PizzaOrderRepository repository) {
-        this.repository = repository;
+    public OrderController(PizzaOrderService service) {
+        this.service = service;
     }
 
     @PostMapping("/order")
-    public Map<String, String> order(@RequestBody Map<String, String> request) {
-        String pizza = request.get("pizza");
-        String size = request.get("size");
-
-        PizzaOrder order = new PizzaOrder();
-        order.setPizza(pizza);
-        order.setSize(size);
-        order = repository.save(order);
-
-        String estimatedTime = "20 minutes";
-
-        Map<String, String> response = new HashMap<>();
-        response.put("orderId", order.getId().toString());
-        response.put("estimatedTime", estimatedTime);
-        return response;
+    public PizzaOrderResponse order(@RequestBody PizzaOrderRequest request) {
+        return service.order(request);
     }
 }
