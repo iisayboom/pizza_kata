@@ -1,1 +1,1 @@
-# pizza_katta
+# pizza_kata
