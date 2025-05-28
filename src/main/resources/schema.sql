@@ -1,4 +1,4 @@
-
+DROP TABLE IF EXISTS pizza_order;
 CREATE TABLE pizza_order (
     id UUID PRIMARY KEY,
     pizza VARCHAR(255),

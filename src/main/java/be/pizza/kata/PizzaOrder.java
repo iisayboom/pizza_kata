@@ -1,4 +1,3 @@
-
 package be.pizza.kata;
 
 import jakarta.persistence.Column;
@@ -9,8 +8,8 @@ import lombok.Data;
 
 import java.util.UUID;
 
-@Data
 @Entity
+@Data
 public class PizzaOrder {
 
     @Id

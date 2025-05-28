@@ -1,4 +1,3 @@
-
 package be.pizza.kata;
 
 import org.springframework.data.jpa.repository.JpaRepository;
