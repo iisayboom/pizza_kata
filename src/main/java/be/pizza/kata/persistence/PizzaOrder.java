@@ -1,4 +1,4 @@
-package be.pizza.kata;
+package be.pizza.kata.persistence;
 
 import jakarta.persistence.*;
 import lombok.Data;

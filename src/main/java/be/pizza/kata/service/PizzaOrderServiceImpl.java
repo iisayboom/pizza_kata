@@ -1,9 +1,11 @@
 package be.pizza.kata.service;
 
-import be.pizza.kata.PizzaOrder;
+import be.pizza.kata.persistence.PizzaOrder;
 import be.pizza.kata.PizzaOrderRepository;
+import be.pizza.kata.domain.Order;
 import be.pizza.kata.dto.PizzaOrderRequest;
 import be.pizza.kata.dto.PizzaOrderResponse;
+import be.pizza.kata.mapper.PizzaOrderMapper;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,13 +19,11 @@ public class PizzaOrderServiceImpl implements PizzaOrderService {
 
     @Override
     public PizzaOrderResponse order(PizzaOrderRequest request) {
-        PizzaOrder order = new PizzaOrder();
-        order.setPizza(request.pizza);
-        order.setSize(request.size);
-        order = repository.save(order);
+        Order domainOrder = new Order(request.pizza(), request.size());
 
-        String estimatedTime = "20 minutes";
+        PizzaOrder entity = PizzaOrderMapper.fromDomain(domainOrder);
+        entity = repository.save(entity);
 
-        return new PizzaOrderResponse(order.getId().toString(), estimatedTime);
+        return new PizzaOrderResponse(entity.getId().toString(), domainOrder.estimatePreparationTime() + " minutes");
     }
 }

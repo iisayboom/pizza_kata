@@ -3,6 +3,7 @@ package be.pizza.kata;
 import be.pizza.kata.dto.PizzaOrderRequest;
 import be.pizza.kata.dto.PizzaOrderResponse;
 import be.pizza.kata.service.PizzaOrderService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +20,7 @@ public class OrderController {
     }
 
     @PostMapping("/order")
-    public PizzaOrderResponse order(@RequestBody PizzaOrderRequest request) {
+    public PizzaOrderResponse order(@RequestBody @Valid PizzaOrderRequest request) {
         return service.order(request);
     }
 }
