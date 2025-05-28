@@ -1,4 +1,4 @@
-package be.pizza.kata;
+package be.pizza.kata.controller;
 
 import be.pizza.kata.dto.PizzaOrderRequest;
 import be.pizza.kata.dto.PizzaOrderResponse;

@@ -1,9 +1,9 @@
 package be.pizza.kata.service;
 
-import be.pizza.kata.persistence.PizzaOrder;
-import be.pizza.kata.PizzaOrderRepository;
 import be.pizza.kata.dto.PizzaOrderRequest;
 import be.pizza.kata.dto.PizzaOrderResponse;
+import be.pizza.kata.persistence.PizzaOrder;
+import be.pizza.kata.persistence.PizzaOrderRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

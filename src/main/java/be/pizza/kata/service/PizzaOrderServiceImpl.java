@@ -1,11 +1,11 @@
 package be.pizza.kata.service;
 
-import be.pizza.kata.persistence.PizzaOrder;
-import be.pizza.kata.PizzaOrderRepository;
 import be.pizza.kata.domain.Order;
 import be.pizza.kata.dto.PizzaOrderRequest;
 import be.pizza.kata.dto.PizzaOrderResponse;
 import be.pizza.kata.mapper.PizzaOrderMapper;
+import be.pizza.kata.persistence.PizzaOrder;
+import be.pizza.kata.persistence.PizzaOrderRepository;
 import org.springframework.stereotype.Service;
 
 @Service

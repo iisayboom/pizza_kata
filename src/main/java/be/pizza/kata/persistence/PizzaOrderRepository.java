@@ -1,6 +1,5 @@
-package be.pizza.kata;
+package be.pizza.kata.persistence;
 
-import be.pizza.kata.persistence.PizzaOrder;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
