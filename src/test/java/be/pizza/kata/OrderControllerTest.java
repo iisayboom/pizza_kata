@@ -44,7 +44,7 @@ public class OrderControllerTest {
                 }
         );
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         Map<String, Object> body = response.getBody();
         assertThat(body).isNotNull();
         assertThat(body)
@@ -70,4 +70,56 @@ public class OrderControllerTest {
         long countAfter = repository.count();
         assertThat(countAfter).isEqualTo(countBefore + 1);
     }
+
+    @Test
+    void shouldReturn400_whenRequestValidationFails() {
+        String invalidJson = "{ \"pizza\": \"\", \"size\": \"GODZILLA\" }"; // fails @NotBlank + @Pattern
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(invalidJson, headers);
+
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                "/order",
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Map<String, Object> body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body).containsEntry("error", "Validation failed");
+        assertThat(body).containsKey("details");
+
+        @SuppressWarnings("unchecked")
+        Map<String, String> details = (Map<String, String>) body.get("details");
+        assertThat(details).containsKeys("pizza", "size");
+    }
+
+    @Test
+    void shouldReturn400_whenDomainValidationFails() {
+        String json = "{ \"pizza\": null, \"size\": \"MEDIUM\" }";
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> request = new HttpEntity<>(json, headers);
+
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                "/order",
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Map<String, Object> body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body).containsEntry("error", "Validation failed");
+
+        @SuppressWarnings("unchecked")
+        Map<String, String> details = (Map<String, String>) body.get("details");
+        assertThat(details).containsEntry("pizza", "Pizza must not be blank");
+    }
+
 }
