@@ -1,15 +1,13 @@
 package be.pizza.kata;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.UUID;
 
 @Entity
 @Data
+@Table(name = "pizza_order")
 public class PizzaOrder {
 
     @Id
