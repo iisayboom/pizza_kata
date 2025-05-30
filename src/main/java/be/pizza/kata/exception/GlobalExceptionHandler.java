@@ -1,5 +1,6 @@
 package be.pizza.kata.exception;
 
+import be.pizza.kata.exception.custom.InvalidFieldException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -20,6 +21,13 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .badRequest()
                 .body(Map.of("error", ex.getMessage()));
+    }
+
+    @ExceptionHandler(InvalidFieldException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidField(InvalidFieldException ex) {
+        return ResponseEntity.badRequest().body(
+                new ErrorResponse("Validation failed", Map.of(ex.field(), ex.getMessage()))
+        );
     }
 
     @ExceptionHandler(Exception.class)

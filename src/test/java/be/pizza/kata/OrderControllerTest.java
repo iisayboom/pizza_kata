@@ -9,11 +9,17 @@ import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
+import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.junit.jupiter.Container;
+import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Testcontainers
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public class OrderControllerTest {
 
@@ -25,15 +31,31 @@ public class OrderControllerTest {
 
     private HttpHeaders headers;
 
+    @SuppressWarnings("resource")
+    @Container
+    static PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:15")
+            .withDatabaseName("pizza-test")
+            .withUsername("test")
+            .withPassword("test");
+
+    @DynamicPropertySource
+    static void overrideProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", postgres::getJdbcUrl);
+        registry.add("spring.datasource.username", postgres::getUsername);
+        registry.add("spring.datasource.password", postgres::getPassword);
+    }
+
     @BeforeEach
     void setup() {
+        repository.deleteAll();
+
         headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
     }
 
     @Test
     void shouldReturnOrderIdAndEstimatedTime() {
-        String requestJson = "{ \"pizza\": \"MARGHERITA\", \"size\": \"MEDIUM\" }";
+        String requestJson = "{ \"pizzaName\": \"MARGHERITA\", \"size\": \"MEDIUM\" }";
         HttpEntity<String> request = new HttpEntity<>(requestJson, headers);
 
         ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
@@ -56,7 +78,7 @@ public class OrderControllerTest {
     @Test
     void shouldPersistOrderInDatabase() {
         long countBefore = repository.count();
-        String requestJson = "{ \"pizza\": \"PEPPERONI\", \"size\": \"LARGE\" }";
+        String requestJson = "{ \"pizzaName\": \"EXTRA_CHEESE\", \"size\": \"LARGE\" }";
         HttpEntity<String> request = new HttpEntity<>(requestJson, headers);
 
         restTemplate.exchange(
@@ -73,7 +95,7 @@ public class OrderControllerTest {
 
     @Test
     void shouldReturn400_whenRequestValidationFails() {
-        String invalidJson = "{ \"pizza\": \"\", \"size\": \"GODZILLA\" }"; // fails @NotBlank + @Pattern
+        String invalidJson = "{ \"pizzaName\": \"\", \"size\": \"GODZILLA\" }";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(invalidJson, headers);
@@ -94,12 +116,12 @@ public class OrderControllerTest {
 
         @SuppressWarnings("unchecked")
         Map<String, String> details = (Map<String, String>) body.get("details");
-        assertThat(details).containsKeys("pizza", "size");
+        assertThat(details).containsKeys("pizzaName", "size");
     }
 
     @Test
     void shouldReturn400_whenDomainValidationFails() {
-        String json = "{ \"pizza\": null, \"size\": \"MEDIUM\" }";
+        String json = "{ \"pizzaName\": null, \"size\": \"MEDIUM\" }";
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
         HttpEntity<String> request = new HttpEntity<>(json, headers);
@@ -119,7 +141,59 @@ public class OrderControllerTest {
 
         @SuppressWarnings("unchecked")
         Map<String, String> details = (Map<String, String>) body.get("details");
-        assertThat(details).containsEntry("pizza", "Pizza must not be blank");
+        assertThat(details).containsEntry("pizzaName", "Pizza must not be blank");
+    }
+
+    @Test
+    void shouldReturnCorrectEstimatedTime_whenToppingsAreIncluded() {
+        String requestJson = """
+                {
+                    "pizzaName": "VEGGIE",
+                    "size": "SMALL",
+                    "toppings": ["OLIVES", "EXTRA_CHEESE"]
+                }
+                """;
+        HttpEntity<String> request = new HttpEntity<>(requestJson, headers);
+
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                "/order",
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        Map<String, Object> body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body).containsEntry("estimatedTime", "24 minutes");
+        assertThat(body.get("orderId")).isNotNull();
+    }
+
+    @Test
+    void shouldReturn400_whenToppingIsInvalid() {
+        String json = """
+                {
+                    "pizzaName": "FUNGI",
+                    "size": "MEDIUM",
+                    "toppings": ["BANANA"]
+                }
+                """;
+        HttpEntity<String> request = new HttpEntity<>(json, headers);
+
+        ResponseEntity<Map<String, Object>> response = restTemplate.exchange(
+                "/order",
+                HttpMethod.POST,
+                request,
+                new ParameterizedTypeReference<>() {
+                }
+        );
+
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        Map<String, Object> body = response.getBody();
+        assertThat(body).isNotNull();
+        assertThat(body).containsEntry("error", "Validation failed");
+        assertThat(body.get("details")).asString().contains("BANANA");
     }
 
 }
